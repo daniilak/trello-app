@@ -11,7 +11,7 @@
 ```
 {
   "clientKey" : "key",
-	"appKey"    : "key",
-	"boardID"   : "key"
+  "appKey"    : "key",
+  "boardID"   : "key"
 }
 ```
