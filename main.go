@@ -20,25 +20,36 @@ type Config struct {
 
 // Card structure
 type Card struct {
-	ID   string
-	Name string
+	ID               string
+	Closed           bool
+	DateLastActivity string
+	Desc             string
+	IDBoard          string
+	IDList           string
+	Name             string
 }
 
 // Member structure
 type Member struct {
-	ID       string
-	IDMember string
+	ID          string
+	IDMember    string
+	Identifier  string
+	dateCreated string
+	dateExpires string
 }
 
 // Board structure
 type Board struct {
-	ID             string
-	URL            string
-	Name           string
-	Desc           string
-	DescData       string
-	Closed         bool
-	IDOrganization string
+	ID               string
+	Desc             string
+	DescData         string
+	Closed           bool
+	IDOrganization   string
+	ShortLink        string
+	DateLastActivity string
+	URL              string
+	Name             string
+	Starred          bool
 }
 
 func getConfigList() (config Config) {
@@ -66,14 +77,13 @@ func main() {
 
 	if len(os.Args) > 1 {
 		switch param := os.Args[1]; param {
-
-		case "-b":
-			boards := getListBoards(IDMember)
-			for i := 0; i < len(boards); i++ {
-				fmt.Printf("%d %+v\n", i+1, boards[i].Name)
-			}
+		case "-h":
+			fmt.Println("	-b 	         get list boards")
+			fmt.Println("	-c <number>	 get list cards")
 			break
-
+		case "-b":
+			printBoards(getListBoards(IDMember))
+			break
 		case "-c":
 			if len(os.Args) < 2 {
 				fmt.Println("needed number")
@@ -81,11 +91,10 @@ func main() {
 			}
 			s := os.Args[2]
 			cardID := parseInt(s)
-			cards := getListCards(IDMember, cardID)
-			for i := 0; i < len(cards); i++ {
-				fmt.Printf("%d %+v\n", i+1, cards[i].Name)
-			}
+			printCards(getListCards(IDMember, cardID))
 			break
+		default:
+			panic("unrecogni	zed escape character")
 		}
 	}
 }
@@ -120,7 +129,6 @@ func getListCards(IDMember string, id int) (cards []Card) {
 	boards := getListBoards(IDMember)
 	fmt.Println("SELECT BOARD: ", string(boards[id-1].Name))
 
-	//"/cards/?limit=10&fields=name&key="
 	respBytes := requestTrelloAPI("boards/", string(boards[id-1].ID), "/cards")
 	err := json.Unmarshal(respBytes, &cards)
 
@@ -170,4 +178,16 @@ func requestTrelloAPI(args ...string) (respBytes []byte) {
 		fmt.Printf("err: %s", err)
 	}
 	return respBytes
+}
+
+func printBoards(boards []Board) {
+	for i := 0; i < len(boards); i++ {
+		fmt.Printf("%d %+v\n", i+1, boards[i].Name)
+	}
+}
+
+func printCards(cards []Card) {
+	for i := 0; i < len(cards); i++ {
+		fmt.Printf("%d %+v\n", i+1, cards[i].Name)
+	}
 }
