@@ -74,6 +74,8 @@ var config = getConfigList()
 // IDMember getting
 var IDMember = getMemberID()
 
+var cFlag, bFlag stringFlag
+
 func parseInt(s string) (i int) {
 	strconv.Atoi(s)
 	strconv.ParseInt(s, 10, 64)
@@ -83,10 +85,6 @@ func parseInt(s string) (i int) {
 }
 
 func (sf *stringFlag) Set(x string) error {
-	fmt.Println("ad")
-	if len(x) == 0 {
-		x = ""
-	}
 	sf.value = x
 	sf.set = true
 	return nil
@@ -96,46 +94,34 @@ func (sf *stringFlag) String() string {
 	return sf.value
 }
 
-var cFlag, bFlag, hFlag stringFlag
-
-func help() {
-	fmt.Println("	-b 	         get list boards")
-	fmt.Println("	-c <number>	 get list cards")
-}
-
-func parseArgs() {
-	flags := os.Args[1]
-	switch flags {
-	case "--help":
-		help()
-		break
-	case "-b":
-		printBoards(getListBoards(IDMember))
-		break
-	case "-c":
-		if len(os.Args) < 2 {
-			fmt.Println("needed number")
-			return
-		}
-		printCards(getListCards(IDMember, os.Args[2]))
-		break
+func parseArgs() bool {
+	if os.Args[1] == "--help" || os.Args[1] == "-h" {
+		fmt.Println("	-b 	         get list boards")
+		fmt.Println("	-c <number>	 get list cards")
+		return true
 	}
+	return false
 }
 
-func main() {
-
+func parseFlags() {
 	flag.Var(&bFlag, "b", "the list of boards")
 	flag.Var(&cFlag, "c", "the cards of board")
-	flag.Var(&hFlag, "h", "the help")
 
-	if hFlag.set {
-		help()
-	}
+	flag.Parse()
+
 	if cFlag.set {
 		printCards(getListCards(IDMember, cFlag.value))
 	}
 	if bFlag.set {
 		printBoards(getListBoards(IDMember))
+	}
+}
+
+func main() {
+	if len(os.Args) > 1 {
+		if !parseArgs() {
+			parseFlags()
+		}
 	}
 }
 
@@ -163,10 +149,6 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
-}
-
-func parseByteToObj() {
-
 }
 
 func getListCards(IDMember string, id string) (cards []Card) {
