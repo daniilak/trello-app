@@ -113,7 +113,7 @@ func parseFlags() {
 		printCards(getListCards(IDMember, cFlag.value))
 	}
 	if bFlag.set {
-		printBoards(getListBoards(IDMember))
+		printBoards(getListBoards(IDMember, bFlag.value))
 	}
 }
 
@@ -152,7 +152,7 @@ func check(e error) {
 }
 
 func getListCards(IDMember string, id string) (cards []Card) {
-	boards := getListBoards(IDMember)
+	boards := getListBoards(IDMember, "all")
 
 	fmt.Println("SELECT BOARD: ", string(boards[parseInt(id)-1].Name))
 
@@ -166,7 +166,8 @@ func getListCards(IDMember string, id string) (cards []Card) {
 	return cards
 }
 
-func getListBoards(IDMember string) (boards []Board) {
+func getListBoards(IDMember string, printType string) (boards []Board) {
+
 	respBytes := requestTrelloAPI("members/", string(IDMember), "/boards")
 	err := json.Unmarshal(respBytes, &boards)
 	if err != nil {
