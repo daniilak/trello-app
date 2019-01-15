@@ -16,7 +16,7 @@ import (
 type Config struct {
 	ClientKey string
 	AppKey    string
-	BoardID   string
+	IDMember  string
 }
 
 // Card structure
@@ -68,11 +68,20 @@ func getConfigList() (config Config) {
 	return config
 }
 
+func saveIDMember() {
+	if len(config.IDMember) == 0 {
+		config.IDMember = getMemberID()
+		jdata1, err := json.MarshalIndent(config, "", " ")
+		if err != nil {
+			fmt.Println(err)
+		}
+		jsonFile, err := os.Create("config.json")
+		jsonFile.Write(jdata1)
+	}
+}
+
 // config getting
 var config = getConfigList()
-
-// IDMember getting
-var IDMember = getMemberID()
 
 var cFlag, bFlag stringFlag
 
@@ -110,14 +119,15 @@ func parseFlags() {
 	flag.Parse()
 
 	if cFlag.set {
-		printCards(getListCards(IDMember, cFlag.value))
+		printCards(getListCards(cFlag.value))
 	}
 	if bFlag.set {
-		printBoards(getListBoards(IDMember, bFlag.value))
+		printBoards(getListBoards(bFlag.value))
 	}
 }
 
 func main() {
+	saveIDMember()
 	if len(os.Args) > 1 {
 		if !parseArgs() {
 			parseFlags()
@@ -151,8 +161,8 @@ func check(e error) {
 	}
 }
 
-func getListCards(IDMember string, id string) (cards []Card) {
-	boards := getListBoards(IDMember, "all")
+func getListCards(id string) (cards []Card) {
+	boards := getListBoards("all")
 
 	fmt.Println("SELECT BOARD: ", string(boards[parseInt(id)-1].Name))
 
@@ -166,9 +176,9 @@ func getListCards(IDMember string, id string) (cards []Card) {
 	return cards
 }
 
-func getListBoards(IDMember string, printType string) (boards []Board) {
+func getListBoards(printType string) (boards []Board) {
 
-	respBytes := requestTrelloAPI("members/", string(IDMember), "/boards")
+	respBytes := requestTrelloAPI("members/", config.IDMember, "/boards")
 	err := json.Unmarshal(respBytes, &boards)
 	if err != nil {
 		fmt.Printf("with creating struct from bytes : %s", err)
@@ -201,7 +211,7 @@ func requestTrelloAPI(args ...string) (respBytes []byte) {
 			"&key=",
 			string(config.AppKey)},
 		"")
-	//fmt.Println(request)
+	fmt.Println(request)
 	respBytes, err := readBody(request)
 	if err != nil {
 		fmt.Printf("err: %s", err)

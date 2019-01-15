@@ -22,6 +22,7 @@ config.json
 {
   "clientKey" : "key",
   "appKey"    : "key"
+  "IDMember"  : ""
 }
 ```
 
